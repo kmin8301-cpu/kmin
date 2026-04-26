@@ -443,8 +443,8 @@
       <div class="kpi-bar"><div class="kpi-bar-fill" id="bar-resolved" style="width:0%"></div></div>
       <div class="kpi-hint">클릭하여 목록 보기</div>
     </div>
-    <div class="kpi-card critical" data-kpi="critical" role="button" tabindex="0" aria-label="Critical 이슈 목록 보기">
-      <div class="kpi-label">Critical</div>
+    <div class="kpi-card critical" data-kpi="critical" role="button" tabindex="0" aria-label="A등급 이슈 목록 보기">
+      <div class="kpi-label">A등급</div>
       <div class="kpi-value" id="kpi-critical">—</div>
       <div class="kpi-sub" id="kpi-critical-sub">최우선 처리</div>
       <div class="kpi-bar"><div class="kpi-bar-fill" id="bar-critical" style="width:0%"></div></div>
@@ -477,9 +477,9 @@
     <div class="multiselect" id="ms-severity">
       <div class="multiselect-trigger" id="ms-trigger-severity"><span class="ms-label">전체 중요도</span><span class="ms-arrow">▾</span></div>
       <div class="multiselect-dropdown" id="ms-drop-severity">
-        <label class="ms-option"><input type="checkbox" value="Critical"> Critical</label>
-        <label class="ms-option"><input type="checkbox" value="Major"> Major</label>
-        <label class="ms-option"><input type="checkbox" value="Minor"> Minor</label>
+        <label class="ms-option"><input type="checkbox" value="A"> A</label>
+        <label class="ms-option"><input type="checkbox" value="B"> B</label>
+        <label class="ms-option"><input type="checkbox" value="C"> C</label>
       </div>
     </div>
 
@@ -636,7 +636,6 @@ const KPI_MODAL_COLS = [
   {label:'제목',    key:'타이틀',                                   width:'auto'},
   {label:'유형',    key:'문제유형',      type:'select',            width:'58px'},
   {label:'중요도',   key:'중요도',       type:'select',            width:'72px'},
-  {label:'Feature', key:'feature',      type:'select',            width:'100px'},
   {label:'System',  key:'System issue', type:'select',            width:'60px'},
   {label:'결과',    key:'Close option', type:'select',            width:'68px'},
   {label:'담당자',   key:'등록자',                                   width:'68px'},
@@ -1008,7 +1007,7 @@ function openKpiModal(kpiType) {
     open:       {title:'Open 이슈 목록',      sub:'미처리 이슈',      fn:()=>filteredData.filter(r=>r['진행상태']==='Open')},
     inprogress: {title:'Resolve 이슈 목록',   sub:'발행 처리중 이슈', fn:()=>filteredData.filter(r=>(r['진행상태']||'').startsWith('Resolve'))},
     resolved:   {title:'Close 이슈 목록',     sub:'종결 이슈',        fn:()=>filteredData.filter(r=>r['진행상태']==='Close')},
-    critical:   {title:'Critical 이슈 목록',    sub:'최우선 처리 이슈', fn:()=>filteredData.filter(r=>r['중요도']==='Critical')},
+    critical:   {title:'A등급 이슈 목록',        sub:'A등급 이슈',       fn:()=>filteredData.filter(r=>r['중요도']==='A')},
     system:     {title:'System Issue 목록',     sub:'시스템 이슈',      fn:()=>filteredData.filter(r=>(r['System issue']||'').toUpperCase()==='Y')},
   };
   const cfg = KPI_MAP[kpiType]; if(!cfg) return;
@@ -1122,7 +1121,6 @@ function renderKpiModalBody() {
     <td class="tc-title-cell"><span class="tc-title-clamp">${esc(r['타이틀']||'')}</span></td>
     <td>${typeBadge(r['문제유형']||'')}</td>
     <td>${sevBadge(r['중요도']||'')}</td>
-    <td><span class="badge badge-feat">${esc(r['feature']||'')}</span></td>
     <td>${systemBadge(r['System issue']||'')}</td>
     <td>${closeBadge(r['Close option']||'')}</td>
     <td class="tc-sm">${esc(r['등록자']||'')}</td>
@@ -1237,7 +1235,7 @@ function renderKPIs() {
   const open=d.filter(r=>r['진행상태']==='Open').length;
   const inp =d.filter(r=>(r['진행상태']||'').startsWith('Resolve')).length;
   const res =d.filter(r=>r['진행상태']==='Close').length;
-  const crit=d.filter(r=>r['중요도']==='Critical').length;
+  const crit=d.filter(r=>r['중요도']==='A').length;
   const sys =d.filter(r=>(r['System issue']||'').toUpperCase()==='Y').length;
   const pct = n=>total?Math.round(n/total*100):0;
   const isFiltered = filteredData.length !== allData.length;
@@ -1297,8 +1295,8 @@ function renderCharts() {
   );
   const vc=count(d,'중요도');
   renderDonut('chart-severity',
-    ['Critical','Major','Minor'],
-    [vc['Critical']||0,vc['Major']||0,vc['Minor']||0],
+    ['A','B','C'],
+    [vc['A']||0,vc['B']||0,vc['C']||0],
     [CHART_COLORS.critical,CHART_COLORS.major,CHART_COLORS.minor]
   );
   const tc=count(d,'문제유형');
@@ -1306,11 +1304,11 @@ function renderCharts() {
 
   const stageCounts=count(d,'발생단계');
   const stageLabels=Object.keys(stageCounts);
-  const stageData=stageLabels.map(()=>({critical:0,major:0,minor:0}));
-  d.forEach(r=>{const idx=stageLabels.indexOf(r['발생단계']);if(idx>=0){const s=(r['중요도']||'').toLowerCase();if(s==='critical')stageData[idx].critical++;else if(s==='major')stageData[idx].major++;else if(s==='minor')stageData[idx].minor++;}});
+  const stageData=stageLabels.map(()=>({a:0,b:0,c:0}));
+  d.forEach(r=>{const idx=stageLabels.indexOf(r['발생단계']);if(idx>=0){const s=(r['중요도']||'').toUpperCase();if(s==='A')stageData[idx].a++;else if(s==='B')stageData[idx].b++;else if(s==='C')stageData[idx].c++;}});
   renderStackedBar('chart-stage',stageLabels,
-    [stageData.map(s=>s.critical),stageData.map(s=>s.major),stageData.map(s=>s.minor)],
-    ['Critical','Major','Minor'],
+    [stageData.map(s=>s.a),stageData.map(s=>s.b),stageData.map(s=>s.c)],
+    ['A','B','C'],
     [CHART_COLORS.critical,CHART_COLORS.major,CHART_COLORS.minor]
   );
 
@@ -1647,7 +1645,7 @@ function statusBadge(s){
   const cls=s==='Open'?'badge-open':s==='Close'?'badge-close':s==='Resolve(발행완료)'?'badge-resolve-완료':s==='Resolve(발행전)'?'badge-resolve-전':s==='Resolve(발행불필요)'?'badge-resolve-불필요':(s||'').startsWith('Resolve')?'badge-resolve-완료':'';
   return `<span class="badge ${cls}">${esc(s)}</span>`;
 }
-function sevBadge(s){return `<span class="badge ${{Critical:'badge-critical',Major:'badge-major',Minor:'badge-minor'}[s]||''}">${esc(s)}</span>`;}
+function sevBadge(s){return `<span class="badge ${{A:'badge-critical',B:'badge-major',C:'badge-minor'}[s]||''}">${esc(s)}</span>`;}
 function typeBadge(s){
   const cls={'HW':'badge-type-hw','SW':'badge-type-sw','기구':'badge-type-기구','HW/SW':'badge-type-hwsw','HW/기구':'badge-type-hw기구'}[s]||'';
   return `<span class="badge ${cls}">${esc(s)}</span>`;
