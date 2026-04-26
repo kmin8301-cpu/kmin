@@ -280,8 +280,8 @@
   .tc-date { font-size:12px; white-space:nowrap; color:var(--samsung-gray-4); }
   .tc-sm   { font-size:12px; white-space:nowrap; }
   .tc-fs12 { font-size:12px; }
-  .tc-title-cell { font-size:13px; max-width:none; white-space:normal; }
-  .tc-title-clamp { display:-webkit-box; -webkit-line-clamp:2; line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; line-height:1.4; }
+  .tc-title-cell { font-size:13px; max-width:none; }
+  .tc-title-clamp { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .badge-feat { background:#EBF5FF; color:#1A4A7A; font-size:11px; }
 
   /* ─── EMPTY STATE ─── */
@@ -625,14 +625,13 @@ const KPI_MODAL_COLS = [
   {label:'#',       key:null,                                     width:'36px'},
   {label:'사례코드',  key:'사례코드',                                width:'108px'},
   {label:'발생단계',  key:'발생단계',     type:'select',            width:'80px'},
-  {label:'등록일',   key:'등록일',                                  width:'92px'},
+  {label:'등록자',   key:'등록자',                                   width:'72px'},
   {label:'상태',    key:'진행상태',      type:'select',            width:'90px'},
   {label:'제목',    key:'타이틀',                                   width:'auto'},
   {label:'유형',    key:'문제유형',      type:'select',            width:'58px'},
   {label:'중요도',   key:'중요도',       type:'select',            width:'72px'},
+  {label:'빈도',    key:'발생빈도',      type:'select',            width:'64px'},
   {label:'System',  key:'System issue', type:'select',            width:'60px'},
-  {label:'결과',    key:'Close option', type:'select',            width:'68px'},
-  {label:'담당자',   key:'등록자',                                   width:'68px'},
 ];
 const MS_CONFIG = [
   { key:'status',   triggerId:'ms-trigger-status',   dropId:'ms-drop-status',   placeholder:'전체 상태' },
@@ -1110,14 +1109,13 @@ function renderKpiModalBody() {
     <td class="tc-no">${i+1}</td>
     <td class="tc-code">${esc(r['사례코드']||'')}</td>
     <td class="tc-sm">${esc(r['발생단계']||'')}</td>
-    <td class="tc-date">${esc(r['등록일']||'')}</td>
+    <td class="tc-sm">${esc(r['등록자']||'')}</td>
     <td>${statusBadge(r['진행상태']||'')}</td>
     <td class="tc-title-cell"><span class="tc-title-clamp">${esc(r['타이틀']||'')}</span></td>
     <td>${typeBadge(r['문제유형']||'')}</td>
     <td>${sevBadge(r['중요도']||'')}</td>
+    <td class="tc-fs12">${esc(r['발생빈도']||'')}</td>
     <td>${systemBadge(r['System issue']||'')}</td>
-    <td>${closeBadge(r['Close option']||'')}</td>
-    <td class="tc-sm">${esc(r['등록자']||'')}</td>
   </tr>`).join('');
 
   tbody.onclick = e => {
