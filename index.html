@@ -119,9 +119,10 @@
   .ms-select-all:hover { background: #e8edff; }
 
   /* ─── FILTER BAR ─── */
-  .filter-bar { background: var(--white); border-radius: 12px; padding: 14px 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); margin-bottom: 0; display: flex; align-items: center; flex-wrap: wrap; gap: 8px; border-bottom-left-radius: 0; border-bottom-right-radius: 0; border-bottom: 1px solid var(--samsung-gray-2); }
-  .filter-label { font-size: 12px; font-weight: 600; color: var(--samsung-gray-4); letter-spacing: 0.5px; white-space: nowrap; }
-  .filter-divider { width: 1px; height: 24px; background: var(--samsung-gray-2); margin: 0 2px; flex-shrink: 0; }
+  .filter-bar { background: var(--white); border-radius: 12px; padding: 14px 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); margin-bottom: 0; display: flex; flex-direction: column; gap: 10px; border-bottom-left-radius: 0; border-bottom-right-radius: 0; border-bottom: 1px solid var(--samsung-gray-2); }
+  .filter-row { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+  .filter-label { font-size: 12px; font-weight: 700; color: var(--samsung-blue); letter-spacing: 0.5px; white-space: nowrap; }
+  .filter-divider { width: 1px; height: 24px; background: var(--samsung-gray-2); margin: 0 4px; flex-shrink: 0; }
   .date-range-wrap { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
   .date-range-label { font-size: 11px; font-weight: 600; color: var(--samsung-gray-4); letter-spacing: 0.3px; white-space: nowrap; }
   .date-input { border: 1.5px solid var(--samsung-gray-2); border-radius: 6px; padding: 7px 10px; font-size: 12px; color: var(--samsung-dark); outline: none; transition: border-color 0.15s; width: 128px; background: white; }
@@ -129,9 +130,10 @@
   .date-sep { font-size: 12px; color: var(--samsung-gray-4); }
   .search-input { border: 1.5px solid var(--samsung-gray-2); border-radius: 6px; padding: 7px 12px 7px 34px; font-size: 13px; color: var(--samsung-dark); outline: none; transition: border-color 0.15s; width: 200px; background: white url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23767676' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E") no-repeat 10px center; }
   .search-input:focus { border-color: var(--samsung-blue); outline: none; }
-  .btn-reset { background: none; border: 1.5px solid var(--samsung-gray-2); border-radius: 6px; padding: 7px 14px; font-size: 12px; color: var(--samsung-gray-4); cursor: pointer; transition: all 0.15s; white-space: nowrap; }
-  .btn-reset:hover { border-color: var(--samsung-blue); color: var(--samsung-blue); }
-  .filter-count { margin-left: auto; font-size: 12px; color: var(--samsung-gray-4); white-space: nowrap; }
+  .btn-reset { margin-left: auto; background: none; border: 1.5px solid #1428A0; border-radius: 7px; padding: 7px 16px; font-size: 13px; font-weight: 600; color: #1428A0; cursor: pointer; transition: all 0.15s; white-space: nowrap; display: flex; align-items: center; gap: 6px; }
+  .btn-reset:hover { background: #1428A0; color: white; }
+  .btn-reset-icon { font-size: 16px; line-height: 1; }
+  .filter-count { font-size: 12px; color: var(--samsung-gray-4); white-space: nowrap; }
 
   /* ─── ACTIVE FILTER CHIPS ─── */
   .active-chips-bar { background: #f8f9ff; border: 1px solid var(--samsung-gray-2); border-top: none; border-bottom-left-radius: 12px; border-bottom-right-radius: 12px; padding: 8px 20px; display: none; align-items: center; flex-wrap: wrap; gap: 6px; margin-bottom: 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
@@ -461,61 +463,57 @@
 
   <!-- FILTER BAR -->
   <div class="filter-bar" id="filter-bar">
-    <span class="filter-label">필터</span>
-
-    <div class="multiselect" id="ms-status">
-      <div class="multiselect-trigger" id="ms-trigger-status"><span class="ms-label">전체 상태</span><span class="ms-arrow">▾</span></div>
-      <div class="multiselect-dropdown" id="ms-drop-status">
-        <label class="ms-option"><input type="checkbox" value="Open"> Open</label>
-        <label class="ms-option"><input type="checkbox" value="Resolve(발행완료)"> Resolve(발행완료)</label>
-        <label class="ms-option"><input type="checkbox" value="Resolve(발행전)"> Resolve(발행전)</label>
-        <label class="ms-option"><input type="checkbox" value="Resolve(발행불필요)"> Resolve(발행불필요)</label>
-        <label class="ms-option"><input type="checkbox" value="Close"> Close</label>
+    <!-- 1행: 드롭다운 필터 -->
+    <div class="filter-row">
+      <span class="filter-label">필터</span>
+      <div class="multiselect" id="ms-status">
+        <div class="multiselect-trigger" id="ms-trigger-status"><span class="ms-label">전체 상태</span><span class="ms-arrow">▾</span></div>
+        <div class="multiselect-dropdown" id="ms-drop-status">
+          <label class="ms-option"><input type="checkbox" value="Open"> Open</label>
+          <label class="ms-option"><input type="checkbox" value="Resolve(발행완료)"> Resolve(발행완료)</label>
+          <label class="ms-option"><input type="checkbox" value="Resolve(발행전)"> Resolve(발행전)</label>
+          <label class="ms-option"><input type="checkbox" value="Resolve(발행불필요)"> Resolve(발행불필요)</label>
+          <label class="ms-option"><input type="checkbox" value="Close"> Close</label>
+        </div>
+      </div>
+      <div class="multiselect" id="ms-severity">
+        <div class="multiselect-trigger" id="ms-trigger-severity"><span class="ms-label">전체 중요도</span><span class="ms-arrow">▾</span></div>
+        <div class="multiselect-dropdown" id="ms-drop-severity">
+          <label class="ms-option"><input type="checkbox" value="A"> A</label>
+          <label class="ms-option"><input type="checkbox" value="B"> B</label>
+          <label class="ms-option"><input type="checkbox" value="C"> C</label>
+        </div>
+      </div>
+      <div class="multiselect" id="ms-stage">
+        <div class="multiselect-trigger" id="ms-trigger-stage"><span class="ms-label">전체 단계</span><span class="ms-arrow">▾</span></div>
+        <div class="multiselect-dropdown" id="ms-drop-stage"></div>
+      </div>
+      <div class="multiselect" id="ms-type">
+        <div class="multiselect-trigger" id="ms-trigger-type"><span class="ms-label">전체 유형</span><span class="ms-arrow">▾</span></div>
+        <div class="multiselect-dropdown" id="ms-drop-type"></div>
+      </div>
+      <div class="multiselect" id="ms-feature">
+        <div class="multiselect-trigger" id="ms-trigger-feature"><span class="ms-label">전체 기능</span><span class="ms-arrow">▾</span></div>
+        <div class="multiselect-dropdown" id="ms-drop-feature"></div>
+      </div>
+      <div class="multiselect" id="ms-location">
+        <div class="multiselect-trigger" id="ms-trigger-location"><span class="ms-label">전체 시험처</span><span class="ms-arrow">▾</span></div>
+        <div class="multiselect-dropdown" id="ms-drop-location"></div>
       </div>
     </div>
-
-    <div class="multiselect" id="ms-severity">
-      <div class="multiselect-trigger" id="ms-trigger-severity"><span class="ms-label">전체 중요도</span><span class="ms-arrow">▾</span></div>
-      <div class="multiselect-dropdown" id="ms-drop-severity">
-        <label class="ms-option"><input type="checkbox" value="A"> A</label>
-        <label class="ms-option"><input type="checkbox" value="B"> B</label>
-        <label class="ms-option"><input type="checkbox" value="C"> C</label>
+    <!-- 2행: 등록일 + 검색 + 초기화 -->
+    <div class="filter-row">
+      <div class="date-range-wrap">
+        <span class="date-range-label">등록일</span>
+        <input type="date" class="date-input" id="f-date-from" title="시작일" />
+        <span class="date-sep">~</span>
+        <input type="date" class="date-input" id="f-date-to" title="종료일" />
       </div>
+      <div class="filter-divider"></div>
+      <input type="text" class="search-input" id="f-search" placeholder="제목 또는 코드 검색..." />
+      <div class="filter-count"><span id="filtered-count">0</span> / <span id="total-count">0</span> 건</div>
+      <button class="btn-reset" id="btn-reset"><span class="btn-reset-icon">↺</span> 초기화</button>
     </div>
-
-    <div class="multiselect" id="ms-stage">
-      <div class="multiselect-trigger" id="ms-trigger-stage"><span class="ms-label">전체 단계</span><span class="ms-arrow">▾</span></div>
-      <div class="multiselect-dropdown" id="ms-drop-stage"></div>
-    </div>
-
-    <div class="multiselect" id="ms-type">
-      <div class="multiselect-trigger" id="ms-trigger-type"><span class="ms-label">전체 유형</span><span class="ms-arrow">▾</span></div>
-      <div class="multiselect-dropdown" id="ms-drop-type"></div>
-    </div>
-
-    <div class="multiselect" id="ms-feature">
-      <div class="multiselect-trigger" id="ms-trigger-feature"><span class="ms-label">전체 기능</span><span class="ms-arrow">▾</span></div>
-      <div class="multiselect-dropdown" id="ms-drop-feature"></div>
-    </div>
-
-    <div class="multiselect" id="ms-location">
-      <div class="multiselect-trigger" id="ms-trigger-location"><span class="ms-label">전체 시험처</span><span class="ms-arrow">▾</span></div>
-      <div class="multiselect-dropdown" id="ms-drop-location"></div>
-    </div>
-
-    <div class="filter-divider"></div>
-
-    <div class="date-range-wrap">
-      <span class="date-range-label">등록일</span>
-      <input type="date" class="date-input" id="f-date-from" title="시작일" />
-      <span class="date-sep">~</span>
-      <input type="date" class="date-input" id="f-date-to" title="종료일" />
-    </div>
-
-    <div class="filter-divider"></div>
-    <input type="text" class="search-input" id="f-search" placeholder="제목 또는 코드 검색..." />
-    <button class="btn-reset" id="btn-reset">초기화</button>
-    <div class="filter-count"><span id="filtered-count">0</span> / <span id="total-count">0</span> 건</div>
   </div>
 
   <!-- ACTIVE FILTER CHIPS -->
