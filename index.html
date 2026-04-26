@@ -1226,29 +1226,69 @@ function renderKPIs() {
 function setText(id,v){const el=document.getElementById(id);if(el)el.textContent=v;}
 function setWidth(id,p){const el=document.getElementById(id);if(el)el.style.width=p+'%';}
 
+// ─── CHART COLOR PALETTE (Design Expert: Refined Precision) ───
+const CHART_COLORS = {
+  critical:   '#C8293A',
+  major:      '#E07B39',
+  minor:      '#F5C842',
+  open:       '#C8293A',
+  inprogress: '#1428A0',
+  resolved:   '#2E7D6B',
+  palette:    ['#1428A0','#2E7D6B','#C8293A','#E07B39','#5C6BC0','#00838F','#6D4C41','#7B6FA5'],
+  hiFreq:     '#1428A0',
+  loFreq:     '#A8B8D8',
+  typeColors: ['#1428A0','#4A6FA5','#8AA3C8','#5C6BC0','#2E7D6B'],
+};
+
+// ─── CHART GLOBAL DEFAULTS (Tech Expert) ───
+(function initChartDefaults() {
+  Chart.defaults.font.family = "'Samsung One','SamsungOne',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif";
+  Chart.defaults.color = '#5a6480';
+  Chart.defaults.plugins.tooltip.backgroundColor = 'rgba(22,22,22,0.92)';
+  Chart.defaults.plugins.tooltip.titleColor  = '#ffffff';
+  Chart.defaults.plugins.tooltip.bodyColor   = '#c8d0e0';
+  Chart.defaults.plugins.tooltip.footerColor = '#a0aabe';
+  Chart.defaults.plugins.tooltip.padding     = 10;
+  Chart.defaults.plugins.tooltip.cornerRadius = 6;
+  Chart.defaults.plugins.tooltip.boxPadding  = 4;
+  Chart.defaults.plugins.legend.labels.usePointStyle   = true;
+  Chart.defaults.plugins.legend.labels.pointStyleWidth = 10;
+  Chart.defaults.plugins.legend.labels.padding         = 14;
+})();
+
 // ─── CHARTS ───
 function renderCharts() {
   const d=filteredData;
   const sc=count(d,'진행상태');
-  renderDonut('chart-status',['Open','In Progress','Resolved'],[sc['Open']||0,sc['In Progress']||0,sc['Resolved']||0],['#c0392b','#e67e22','#27ae60']);
+  renderDonut('chart-status',
+    ['Open','In Progress','Resolved'],
+    [sc['Open']||0,sc['In Progress']||0,sc['Resolved']||0],
+    [CHART_COLORS.open,CHART_COLORS.inprogress,CHART_COLORS.resolved]
+  );
   const vc=count(d,'중요도');
-  renderDonut('chart-severity',['Critical','Major','Minor'],[vc['Critical']||0,vc['Major']||0,vc['Minor']||0],['#c0392b','#e67e22','#1428A0']);
+  renderDonut('chart-severity',
+    ['Critical','Major','Minor'],
+    [vc['Critical']||0,vc['Major']||0,vc['Minor']||0],
+    [CHART_COLORS.critical,CHART_COLORS.major,CHART_COLORS.minor]
+  );
   const tc=count(d,'문제유형');
-  renderDonut('chart-type',Object.keys(tc),Object.values(tc),['#1428A0','#27ae60','#e67e22','#8e44ad','#c0392b']);
+  renderDonut('chart-type',Object.keys(tc),Object.values(tc),CHART_COLORS.typeColors);
 
   const stageCounts=count(d,'발생단계');
   const stageLabels=Object.keys(stageCounts);
   const stageData=stageLabels.map(()=>({critical:0,major:0,minor:0}));
   d.forEach(r=>{const idx=stageLabels.indexOf(r['발생단계']);if(idx>=0){const s=(r['중요도']||'').toLowerCase();if(s==='critical')stageData[idx].critical++;else if(s==='major')stageData[idx].major++;else if(s==='minor')stageData[idx].minor++;}});
-  renderStackedBar('chart-stage',stageLabels,[stageData.map(s=>s.critical),stageData.map(s=>s.major),stageData.map(s=>s.minor)],['Critical','Major','Minor'],['#c0392b','#e67e22','#1428A0']);
+  renderStackedBar('chart-stage',stageLabels,
+    [stageData.map(s=>s.critical),stageData.map(s=>s.major),stageData.map(s=>s.minor)],
+    ['Critical','Major','Minor'],
+    [CHART_COLORS.critical,CHART_COLORS.major,CHART_COLORS.minor]
+  );
 
   const fc=count(d,'feature');
   const fs=Object.entries(fc).sort((a,b)=>b[1]-a[1]);
   renderHBar('chart-feature',fs.map(f=>f[0]),fs.map(f=>f[1]));
 
-  // Monthly trend chart
   renderTrendChart(d);
-  // Person chart
   renderPersonChart(d);
 }
 
@@ -1257,7 +1297,7 @@ function renderTrendChart(d) {
   d.forEach(r => {
     const dt = r['등록일']||'';
     if(!dt) return;
-    const ym = dt.slice(0,7); // "2025-03"
+    const ym = dt.slice(0,7);
     if(!monthMap[ym]) monthMap[ym]={critical:0,major:0,minor:0};
     const s=(r['중요도']||'').toLowerCase();
     if(s==='critical') monthMap[ym].critical++;
@@ -1266,24 +1306,26 @@ function renderTrendChart(d) {
   });
   const labels = Object.keys(monthMap).sort();
   const labelsFmt = labels.map(l=>{const[y,m]=l.split('-');return `${y}.${m}`;});
+  const maxVal = Math.max(...labels.map(l=>monthMap[l].critical+monthMap[l].major+monthMap[l].minor),1);
+  const stepSize = maxVal<=10?1:Math.ceil(maxVal/10);
   destroyChart('chart-trend');
   const ctx=document.getElementById('chart-trend').getContext('2d');
   charts['chart-trend']=new Chart(ctx,{
     type:'bar',
     data:{labels:labelsFmt,datasets:[
-      {label:'Critical',data:labels.map(l=>monthMap[l].critical),backgroundColor:'#c0392b',borderRadius:3,borderSkipped:false},
-      {label:'Major',   data:labels.map(l=>monthMap[l].major),   backgroundColor:'#e67e22',borderRadius:3,borderSkipped:false},
-      {label:'Minor',   data:labels.map(l=>monthMap[l].minor),   backgroundColor:'#1428A0',borderRadius:3,borderSkipped:false},
+      {label:'Critical',data:labels.map(l=>monthMap[l].critical),backgroundColor:CHART_COLORS.critical,borderRadius:2,borderSkipped:false},
+      {label:'Major',   data:labels.map(l=>monthMap[l].major),   backgroundColor:CHART_COLORS.major,   borderRadius:2,borderSkipped:false},
+      {label:'Minor',   data:labels.map(l=>monthMap[l].minor),   backgroundColor:CHART_COLORS.minor,   borderRadius:2,borderSkipped:false},
     ]},
     options:{
       responsive:true,maintainAspectRatio:false,
       scales:{
-        x:{stacked:true,grid:{display:false},ticks:{font:{size:12}}},
-        y:{stacked:true,beginAtZero:true,grid:{color:'#f0f0f0'},ticks:{stepSize:1,font:{size:11}}}
+        x:{stacked:true,grid:{display:false},ticks:{maxRotation:45,autoSkip:true}},
+        y:{stacked:true,beginAtZero:true,grid:{color:'rgba(0,0,0,0.06)'},ticks:{stepSize}}
       },
       plugins:{
-        legend:{position:'top',labels:{font:{size:12},usePointStyle:true,pointStyleWidth:10}},
-        tooltip:{mode:'index',intersect:false}
+        legend:{position:'top'},
+        tooltip:{mode:'index',intersect:false,callbacks:{footer:items=>`월 합계: ${items.reduce((s,i)=>s+i.parsed.y,0)}건`}}
       }
     }
   });
@@ -1296,12 +1338,18 @@ function renderPersonChart(d) {
   const ctx=document.getElementById('chart-person').getContext('2d');
   charts['chart-person']=new Chart(ctx,{
     type:'bar',
-    data:{labels:ps.map(p=>p[0]),datasets:[{label:'이슈 수',data:ps.map(p=>p[1]),backgroundColor:ps.map((_,i)=>['#1428A0','#27ae60','#e67e22','#c0392b','#8e44ad','#2980b9','#16a085','#d35400'][i%8]),borderRadius:4}]},
+    data:{labels:ps.map(p=>p[0]),datasets:[{
+      label:'이슈 수',
+      data:ps.map(p=>p[1]),
+      backgroundColor:ps.map((_,i)=>CHART_COLORS.palette[i%CHART_COLORS.palette.length]),
+      borderRadius:4,
+      minBarLength:4,
+    }]},
     options:{
       indexAxis:'y',responsive:true,maintainAspectRatio:false,
       scales:{
-        x:{beginAtZero:true,grid:{color:'#f0f0f0'},ticks:{stepSize:1,font:{size:11}}},
-        y:{grid:{display:false},ticks:{font:{size:12}}}
+        x:{beginAtZero:true,grid:{color:'rgba(0,0,0,0.06)'},ticks:{stepSize:1,precision:0}},
+        y:{grid:{display:false}}
       },
       plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${ctx.parsed.x}건`}}}
     }
@@ -1313,29 +1361,65 @@ function destroyChart(id){if(charts[id]){charts[id].destroy();delete charts[id];
 
 function renderDonut(id,labels,data,colors){
   destroyChart(id);
-  charts[id]=new Chart(document.getElementById(id).getContext('2d'),{type:'doughnut',
-    data:{labels,datasets:[{data,backgroundColor:colors,borderWidth:2,borderColor:'#fff',hoverOffset:6}]},
-    options:{responsive:true,maintainAspectRatio:false,cutout:'68%',
-      plugins:{legend:{position:'right',labels:{font:{size:12},padding:12,usePointStyle:true,pointStyleWidth:10}},
-      tooltip:{callbacks:{label:ctx=>` ${ctx.label}: ${ctx.parsed}건 (${Math.round(ctx.parsed/ctx.dataset.data.reduce((a,b)=>a+b,0)*100)}%)`}}}}});
+  const total=data.reduce((a,b)=>a+b,0);
+  charts[id]=new Chart(document.getElementById(id).getContext('2d'),{
+    type:'doughnut',
+    data:{labels,datasets:[{data,backgroundColor:colors,borderWidth:2,borderColor:'#fff',hoverOffset:8}]},
+    options:{
+      responsive:true,maintainAspectRatio:false,cutout:'68%',
+      animation:{animateRotate:true,animateScale:false},
+      plugins:{
+        legend:{position:'right'},
+        tooltip:{callbacks:{label:ctx=>` ${ctx.label}: ${ctx.parsed}건 (${Math.round(ctx.parsed/total*100)}%)`}}
+      }
+    }
+  });
 }
 
 function renderStackedBar(id,labels,datasets,dsLabels,colors){
   destroyChart(id);
-  charts[id]=new Chart(document.getElementById(id).getContext('2d'),{type:'bar',
-    data:{labels,datasets:datasets.map((d,i)=>({label:dsLabels[i],data:d,backgroundColor:colors[i],borderRadius:i===datasets.length-1?4:0,borderSkipped:false}))},
-    options:{responsive:true,maintainAspectRatio:false,
-      scales:{x:{stacked:true,grid:{display:false},ticks:{font:{size:12}}},y:{stacked:true,beginAtZero:true,grid:{color:'#f0f0f0'},ticks:{stepSize:1,font:{size:11}}}},
-      plugins:{legend:{position:'top',labels:{font:{size:12},usePointStyle:true,pointStyleWidth:10}},tooltip:{mode:'index',intersect:false}}}});
+  const maxVal=Math.max(...labels.map((_,i)=>datasets.reduce((s,d)=>s+(d[i]||0),0)),1);
+  const stepSize=maxVal<=10?1:Math.ceil(maxVal/10);
+  charts[id]=new Chart(document.getElementById(id).getContext('2d'),{
+    type:'bar',
+    data:{labels,datasets:datasets.map((d,i)=>({label:dsLabels[i],data:d,backgroundColor:colors[i],borderRadius:2,borderSkipped:false}))},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      scales:{
+        x:{stacked:true,grid:{display:false}},
+        y:{stacked:true,beginAtZero:true,grid:{color:'rgba(0,0,0,0.06)'},ticks:{stepSize}}
+      },
+      plugins:{
+        legend:{position:'top'},
+        tooltip:{mode:'index',intersect:false,callbacks:{footer:items=>`합계: ${items.reduce((s,i)=>s+i.parsed.y,0)}건`}}
+      }
+    }
+  });
 }
 
 function renderHBar(id,labels,data){
   destroyChart(id);
-  charts[id]=new Chart(document.getElementById(id).getContext('2d'),{type:'bar',
-    data:{labels,datasets:[{label:'이슈 수',data,backgroundColor:data.map(v=>v>=2?'#c0392b':'#1428A0'),borderRadius:4}]},
-    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
-      scales:{x:{beginAtZero:true,grid:{color:'#f0f0f0'},ticks:{stepSize:1,font:{size:11}}},y:{grid:{display:false},ticks:{font:{size:12}}}},
-      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${ctx.parsed.x}건`}}}}});
+  charts[id]=new Chart(document.getElementById(id).getContext('2d'),{
+    type:'bar',
+    data:{labels,datasets:[{
+      label:'이슈 수',
+      data,
+      backgroundColor:data.map(v=>v>=2?CHART_COLORS.hiFreq:CHART_COLORS.loFreq),
+      borderRadius:4,
+      minBarLength:4,
+    }]},
+    options:{
+      indexAxis:'y',responsive:true,maintainAspectRatio:false,
+      scales:{
+        x:{beginAtZero:true,grid:{color:'rgba(0,0,0,0.06)'},ticks:{stepSize:1,precision:0}},
+        y:{grid:{display:false}}
+      },
+      plugins:{
+        legend:{display:false},
+        tooltip:{callbacks:{label:ctx=>` ${ctx.parsed.x}건`,afterLabel:ctx=>ctx.parsed.x>=2?' ⚠ 집중 점검 필요':''}}
+      }
+    }
+  });
 }
 
 // ─── TABLE + PAGINATION ───
