@@ -17,14 +17,14 @@
     --samsung-gray-3: #b0b0b0;
     --samsung-gray-4: #767676;
     --samsung-gray-5: #404040;
-    --status-open: #c0392b;
-    --status-inprogress: #e67e22;
-    --status-resolved: #27ae60;
-    --sev-critical: #c0392b;
-    --sev-major: #e67e22;
-    --sev-minor: #2980b9;
+    --status-open:       #B85448;
+    --status-inprogress: #5E78A8;
+    --status-resolved:   #3D8870;
+    --sev-critical:      #B85448;
+    --sev-major:         #A87F48;
+    --sev-minor:         #4E7860;
     --white: #ffffff;
-    --system-purple: #8e44ad;
+    --system-purple:     #7868A8;
   }
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'Samsung One','SamsungOne',-apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',Arial,sans-serif; background: var(--samsung-gray-1); color: var(--samsung-dark); min-height: 100vh; font-size: 14px; }
@@ -184,15 +184,15 @@
   /* ─── BADGES ─── */
   .badge { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; letter-spacing: 0.4px; white-space: nowrap; }
   /* ─ 진행상태 배지 ─ */
-  .badge-open              { background: #fdecea; color: #C8293A; }
-  .badge-resolve-완료      { background: #e8f0fe; color: #1428A0; }
-  .badge-resolve-전        { background: #fff8e1; color: #b45309; }
-  .badge-resolve-불필요    { background: #f3e8ff; color: #6d28d9; }
-  .badge-close             { background: #e8f5e9; color: #2E7D6B; font-weight:700; }
+  .badge-open              { background: #fdf0ee; color: #B85448; }
+  .badge-resolve-완료      { background: #eef2f9; color: #4A6898; }
+  .badge-resolve-전        { background: #fdf6ec; color: #906830; }
+  .badge-resolve-불필요    { background: #f0eef8; color: #6058A0; }
+  .badge-close             { background: #edf4f1; color: #3D8870; font-weight:700; }
   /* ─ 중요도 배지 ─ */
-  .badge-critical { background: #fdecea; color: #C8293A; border: 1px solid #f5c6cb; }
-  .badge-major    { background: #fef3e2; color: #E07B39; border: 1px solid #ffd9a8; }
-  .badge-minor    { background: #fefce8; color: #a16207; border: 1px solid #fde68a; }
+  .badge-critical { background: #fdf0ee; color: #B85448; border: 1px solid #e8c0bc; }
+  .badge-major    { background: #fdf6ec; color: #906830; border: 1px solid #e0d0a0; }
+  .badge-minor    { background: #edf4f0; color: #3a7060; border: 1px solid #b0d0c0; }
   /* ─ 문제유형 배지 ─ */
   .badge-type-hw    { background: #e8f0fe; color: #1a237e; }
   .badge-type-sw    { background: #e8f5e9; color: #1b5e20; }
@@ -1251,17 +1251,18 @@ function setText(id,v){const el=document.getElementById(id);if(el)el.textContent
 function setWidth(id,p){const el=document.getElementById(id);if(el)el.style.width=p+'%';}
 
 // ─── CHART COLOR PALETTE (Design Expert: Refined Precision) ───
+// Warm Slate palette — desaturated, editorial, Claude-inspired
 const CHART_COLORS = {
-  critical:   '#C8293A',
-  major:      '#E07B39',
-  minor:      '#F5C842',
-  open:       '#C8293A',
-  inprogress: '#1428A0',
-  resolved:   '#2E7D6B',
-  palette:    ['#1428A0','#2E7D6B','#C8293A','#E07B39','#5C6BC0','#00838F','#6D4C41','#7B6FA5'],
-  hiFreq:     '#1428A0',
-  loFreq:     '#A8B8D8',
-  typeColors: ['#1428A0','#4A6FA5','#8AA3C8','#5C6BC0','#2E7D6B'],
+  critical:   '#B85448',   // warm terracotta
+  major:      '#A87F48',   // amber brown
+  minor:      '#4E7860',   // forest sage
+  open:       '#B85448',
+  inprogress: '#5E78A8',   // steel blue
+  resolved:   '#3D8870',   // teal sage
+  palette:    ['#5E78A8','#3D8870','#B85448','#A87F48','#7868A8','#3A88A0','#986858','#587858'],
+  hiFreq:     '#5E78A8',
+  loFreq:     '#C8D4E4',
+  typeColors: ['#5E78A8','#3D8870','#7868A8','#A87F48','#3A88A0'],
 };
 
 // ─── CHART GLOBAL DEFAULTS (Tech Expert) ───
@@ -1343,8 +1344,8 @@ function renderDailyChart(d) {
           type: 'bar',
           label: '일별 등록',
           data: counts,
-          backgroundColor: 'rgba(20,40,160,0.65)',
-          borderColor: '#1428A0',
+          backgroundColor: 'rgba(94,120,168,0.60)',
+          borderColor: '#5E78A8',
           borderWidth: 1,
           borderRadius: 3,
           yAxisID: 'y',
@@ -1355,8 +1356,8 @@ function renderDailyChart(d) {
           label: '누적 합계',
           data: cumData,
           borderColor: CHART_COLORS.critical,
-          backgroundColor: 'rgba(200,41,58,0.07)',
-          borderWidth: 2.5,
+          backgroundColor: 'rgba(184,84,72,0.06)',
+          borderWidth: 2,
           pointRadius: labels.length > 30 ? 0 : 3,
           pointHoverRadius: 5,
           fill: true,
@@ -1380,7 +1381,7 @@ function renderDailyChart(d) {
           position: 'left',
           grid: { color: 'rgba(0,0,0,0.06)' },
           ticks: { stepSize, precision: 0 },
-          title: { display: true, text: '일별 건수', font: { size: 11 }, color: '#1428A0' }
+          title: { display: true, text: '일별 건수', font: { size: 11 }, color: '#5E78A8' }
         },
         y1: {
           beginAtZero: true,
